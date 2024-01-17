@@ -24,6 +24,11 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 		"Results": [],
 	};
 
+	// if there's nothing scanned, return nothing
+	if (scannedTextObj.length === 0) {
+		return result;
+	}
+
 	// iterate through each book
 	for (const book of scannedTextObj) {
 		const ISBN = book["ISBN"];
@@ -380,7 +385,7 @@ const noHyphenOut = {
 	"Results": [],
 };
 
-// check if no result should be found, even if within hyphenated word
+// check that substring is not found in text
 const test10result = findSearchTermInBooks("dark", TwoBooksIn);
 if (JSON.stringify(noHyphenOut) === JSON.stringify(test10result)) {
 	console.log("PASS: Test 10");
