@@ -31,7 +31,7 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 		// sort content list based on their line numbers
 		book["Content"].sort((a, b) => a.Line - b.Line);
 
-		// iterate through content
+		// iterate through content of a book
 		for (let i = 0; i < book["Content"].length; i++) {
 			// cleaning punctuation
 			let currLine = book["Content"][i]["Text"].replaceAll(",", "")
@@ -45,10 +45,11 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 			if (!searchTerm.includes(".")) {
 				currLine.replaceAll(".", "");
 			}
+
 			// split line based on space and remove empty words created by double spaces
 			currLine = currLine.split(" ").filter(item => item);
 
-			// if word exists in line, check if we've appended to the list already, do so if not
+			// if word exists in line, append line info to results if not there already
 			if (currLine.includes(searchTerm)) {
 				const found = {
 					"ISBN": ISBN,
@@ -60,12 +61,12 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 				}
 			}
 
-			// check if there's hypens at the last word and if there's a next line
+			// check if there's a hypen at the last word and if there's a next line
 			if (currLine.at(-1).endsWith("-") && i < book["Content"].length - 1) {
 				const lastElement = currLine.at(-1).replace("-", "");
 				const nextElement = book["Content"][i + 1]["Text"].split(" ")[0];
 
-				// if combining the hyphenated word results in searched word, add to result
+				// if combining the hyphenated word and next word results in searched word, add both lines to result
 				if (lastElement !== searchTerm
 					&& searchTerm.includes(lastElement)
 					&& (lastElement + nextElement) === searchTerm) {
@@ -88,11 +89,6 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 					}
 				}
 			}
-			// if so, check if the hypenated string is a substring of the wanted word and also not === to the word (can use includes)
-			// if so, grab the first word of the next line, split or see if you can grab until there's a space,
-			// combine the hypenated pieces and check if they match the search word
-			// if so, append both lines onto ans
-			// for each line, check if it has not been appended yet (or use a set?)
 		}
 	}
 	console.log(result);
