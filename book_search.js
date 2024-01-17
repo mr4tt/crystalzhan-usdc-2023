@@ -33,17 +33,20 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 
 		// iterate through content
 		for (let i = 0; i < book["Content"].length; i++) {
-			// if search word has a . in it, search first?
-			// cleaning line
+			// cleaning punctuation
 			let currLine = book["Content"][i]["Text"].replaceAll(",", "")
 				.replaceAll("?", "")
 				.replaceAll("!", "")
-				.replaceAll(".", "")
 				.replaceAll(";", "")
 				.replaceAll("\"", "")
 				.replaceAll("\\", "");
-			// split line based on space (what happens if there's multiple spaces? trim?)
-			currLine = currLine.split(" ");
+
+			// if searchTerm doesn't have a period, replace them (ex: Mr.)
+			if (!searchTerm.includes(".")) {
+				currLine.replaceAll(".", "");
+			}
+			// split line based on space and remove empty words created by double spaces
+			currLine = currLine.split(" ").filter(item => item);
 
 			// if word exists in line, check if we've appended to the list already, do so if not
 			if (currLine.includes(searchTerm)) {
@@ -96,7 +99,7 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 	return result;
 }
 
-/** Example input object. */
+/** Test Input objects */
 const twentyLeaguesIn = [
 	{
 		"Title": "Twenty Thousand Leagues Under the Sea",
@@ -118,6 +121,66 @@ const twentyLeaguesIn = [
 				"Text": "eyes were, I asked myself how he had managed to see, and",
 			},
 		],
+	},
+];
+
+const TwoBooksIn = [
+	{
+		"Title": "Twenty Thousand Leagues Under the Sea",
+		"ISBN": "9780000528531",
+		"Content": [
+			{
+				"Page": 31,
+				"Line": 8,
+				"Text": "now simply went on by her own momentum.  The dark-",
+			},
+			{
+				"Page": 31,
+				"Line": 9,
+				"Text": "ness was then profound; and however good the Canadian\'s",
+			},
+			{
+				"Page": 31,
+				"Line": 10,
+				"Text": "eyes were, I asked myself how he had managed to see, and",
+			},
+		],
+	},
+	{
+		"Title": "Middlegame",
+		"ISBN": "9781250195524",
+		"Content": [
+			{
+				"Page": 35,
+				"Line": 28,
+				"Text": "\"Mr. Roger, I'd give myself a chainsaw hand for you,\" he says, and she laughs, and",
+			},
+			{
+				"Page": 35,
+				"Line": 29,
+				"Text": "everything is wonderful; everything is perfect. ",
+			},
+			{
+				"Page": 35,
+				"Line": 30,
+				"Text": "There are pieces missing, sure, and not just in the living room floor, ",
+			},
+			{
+				"Page": 35,
+				"Line": 31,
+				"Text": "but whose life doesn't have a few missing pieces?",
+			},
+		],
+	},
+];
+
+const emptyIn = [];
+
+const emptyBookIn = [
+	{
+		"Title": "Twenty Thousand Leagues Under the Sea",
+		"ISBN": "9780000528531",
+		"Content": [],
 	},
 ];
 
@@ -169,4 +232,236 @@ else {
 	console.log("FAIL: Test 2");
 	console.log("Expected:", twentyLeaguesOut.Results.length);
 	console.log("Received:", test2result.Results.length);
+}
+
+const twentyLeaguesDarkOut = {
+	"SearchTerm": "darkness",
+	"Results": [
+		{
+			"ISBN": "9780000528531",
+			"Page": 31,
+			"Line": 8,
+		},
+		{
+			"ISBN": "9780000528531",
+			"Page": 31,
+			"Line": 9,
+		},
+	],
+};
+
+// checking if hyphenated words are accounted for
+const test3result = findSearchTermInBooks("darkness", twentyLeaguesIn);
+if (JSON.stringify(twentyLeaguesDarkOut) === JSON.stringify(test3result)) {
+	console.log("PASS: Test 3");
+}
+else {
+	console.log("FAIL: Test 3");
+	console.log("Expected:", twentyLeaguesDarkOut);
+	console.log("Received:", test3result);
+}
+
+const TwoBooksOut = {
+	"SearchTerm": "and",
+	"Results": [
+		{
+			"ISBN": "9780000528531",
+			"Page": 31,
+			"Line": 9,
+		},
+		{
+			"ISBN": "9780000528531",
+			"Page": 31,
+			"Line": 10,
+		},
+		{
+			"ISBN": "9781250195524",
+			"Page": 35,
+			"Line": 28,
+		},
+		{
+			"ISBN": "9781250195524",
+			"Page": 35,
+			"Line": 30,
+		},
+	],
+};
+
+// checking search through multiple books
+const test4result = findSearchTermInBooks("and", TwoBooksIn);
+if (JSON.stringify(TwoBooksOut) === JSON.stringify(test4result)) {
+	console.log("PASS: Test 4");
+}
+else {
+	console.log("FAIL: Test 4");
+	console.log("Expected:", TwoBooksOut);
+	console.log("Received:", test4result);
+}
+
+const caseOut = {
+	"SearchTerm": "The",
+	"Results": [
+		{
+			"ISBN": "9780000528531",
+			"Page": 31,
+			"Line": 8,
+		},
+	],
+};
+
+// checking if case sensitive
+const test5result = findSearchTermInBooks("The", TwoBooksIn);
+if (JSON.stringify(caseOut) === JSON.stringify(test5result)) {
+	console.log("PASS: Test 5");
+}
+else {
+	console.log("FAIL: Test 5");
+	console.log("Expected:", caseOut);
+	console.log("Received:", test5result);
+}
+
+const emptyStringOut = {
+	"SearchTerm": "",
+	"Results": [],
+};
+
+// check if nothing returns given empty string
+const test6result = findSearchTermInBooks("", TwoBooksIn);
+if (JSON.stringify(emptyStringOut) === JSON.stringify(test6result)) {
+	console.log("PASS: Test 6");
+}
+else {
+	console.log("FAIL: Test 6");
+	console.log("Expected:", emptyStringOut);
+	console.log("Received:", test6result);
+}
+
+const emptyOut = {
+	"SearchTerm": "The",
+	"Results": [],
+};
+
+// check if empty given empty input
+const test7result = findSearchTermInBooks("The", emptyIn);
+if (JSON.stringify(emptyOut) === JSON.stringify(test7result)) {
+	console.log("PASS: Test 7");
+}
+else {
+	console.log("FAIL: Test 7");
+	console.log("Expected:", emptyOut);
+	console.log("Received:", test7result);
+}
+
+// check if empty given empty book
+const test8result = findSearchTermInBooks("The", emptyBookIn);
+if (JSON.stringify(emptyOut) === JSON.stringify(test8result)) {
+	console.log("PASS: Test 8");
+}
+else {
+	console.log("FAIL: Test 8");
+	console.log("Expected:", emptyOut);
+	console.log("Received:", test8result);
+}
+
+const noResultOut = {
+	"SearchTerm": "bacaw",
+	"Results": [],
+};
+
+// check if empty given word not in text
+const test9result = findSearchTermInBooks("bacaw", TwoBooksIn);
+if (JSON.stringify(noResultOut) === JSON.stringify(test9result)) {
+	console.log("PASS: Test 9");
+}
+else {
+	console.log("FAIL: Test 9");
+	console.log("Expected:", noResultOut);
+	console.log("Received:", test9result);
+}
+
+const noHyphenOut = {
+	"SearchTerm": "dark",
+	"Results": [],
+};
+
+// check if no result should be found, even if within hyphenated word
+const test10result = findSearchTermInBooks("dark", TwoBooksIn);
+if (JSON.stringify(noHyphenOut) === JSON.stringify(test10result)) {
+	console.log("PASS: Test 10");
+}
+else {
+	console.log("FAIL: Test 10");
+	console.log("Expected:", noHyphenOut);
+	console.log("Received:", test10result);
+}
+
+const punctOut = {
+	"SearchTerm": "pieces",
+	"Results": [
+		{
+			"ISBN": "9781250195524",
+			"Page": 35,
+			"Line": 30,
+		},
+		{
+			"ISBN": "9781250195524",
+			"Page": 35,
+			"Line": 31,
+		},
+	],
+};
+
+// check if word with punct (here is ?) is found
+const test11result = findSearchTermInBooks("pieces", TwoBooksIn);
+if (JSON.stringify(punctOut) === JSON.stringify(test11result)) {
+	console.log("PASS: Test 11");
+}
+else {
+	console.log("FAIL: Test 11");
+	console.log("Expected:", punctOut);
+	console.log("Received:", test11result);
+}
+
+const periodOut = {
+	"SearchTerm": "Mr.",
+	"Results": [
+		{
+			"ISBN": "9781250195524",
+			"Page": 35,
+			"Line": 28,
+		},
+	],
+};
+
+// check if words with . result is found
+const test12result = findSearchTermInBooks("Mr.", TwoBooksIn);
+if (JSON.stringify(periodOut) === JSON.stringify(test12result)) {
+	console.log("PASS: Test 12");
+}
+else {
+	console.log("FAIL: Test 12");
+	console.log("Expected:", periodOut);
+	console.log("Received:", test12result);
+}
+
+const dialogueOut = {
+	"SearchTerm": "you",
+	"Results": [
+		{
+			"ISBN": "9781250195524",
+			"Page": 35,
+			"Line": 28,
+		},
+	],
+};
+
+// check if words in dialogue are found
+const test13result = findSearchTermInBooks("you", TwoBooksIn);
+if (JSON.stringify(dialogueOut) === JSON.stringify(test13result)) {
+	console.log("PASS: Test 13");
+}
+else {
+	console.log("FAIL: Test 13");
+	console.log("Expected:", dialogueOut);
+	console.log("Received:", test13result);
 }
